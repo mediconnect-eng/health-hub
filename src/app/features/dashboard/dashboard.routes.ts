@@ -6,7 +6,7 @@ import { Patient } from './components/patient/patient';
 export const DASHBOARD_ROUTES: Routes = [
   {
     path: '',
-    component: AdminComponent,
+    component: Patient,
     children: [
       {
         path: 'admin',

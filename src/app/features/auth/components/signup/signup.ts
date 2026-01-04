@@ -6,6 +6,8 @@ import {
   ReactiveFormsModule,
   FormGroup
 } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
+import { SignUpCommand } from '@aws-sdk/client-cognito-identity-provider';
 
 type Gender = 'male' | 'female' | 'other';
 
@@ -18,6 +20,7 @@ type Gender = 'male' | 'female' | 'other';
 export class SignupComponent {
 
   private readonly router = inject(Router);
+  private readonly cognito = inject(AuthService).instance;
 
   
   readonly form = new FormGroup({
@@ -41,22 +44,81 @@ export class SignupComponent {
 
     dateOfBirth: new FormControl<string | null>(null, {
       validators: [Validators.required]
+    }),
+
+    password: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(8)]
+    }),
+
+    confirmPassword: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(8)]
     })
   });
 
   /** Signal for submit state (enterprise-friendly) */
   readonly submitting = signal(false);
 
-  submit(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
+  async submit(): Promise<void> {
+  if (this.form.invalid) {
+    this.form.markAllAsTouched();
+    return;
+  }
 
-    this.submitting.set(true);
+  this.submitting.set(true);
 
-    // API call would go here
+  const {
+    name,
+    email,
+    phone,
+    gender,
+    dateOfBirth,
+    password
+  } = this.form.getRawValue();
 
-    this.router.navigate(['/login']);
+  try {
+    await this.cognito.send(
+      new SignUpCommand({
+        ClientId: '7o70kqbrb50qa52o391uhrslop',
+        Username: email,
+        Password: password,
+        UserAttributes: [
+          { Name: 'name', Value: name },
+          { Name: 'email', Value: email },
+
+          ...(phone
+            ? [{ Name: 'phone_number', Value: `+91${phone}` }]
+            : []),
+
+          ...(gender
+            ? [{ Name: 'gender', Value: String(gender) }]
+            : []),
+
+          ...(dateOfBirth
+            ? [{ Name: 'birthdate', Value: dateOfBirth }]
+            : [])
+        ]
+      })
+    );
+
+    this.onSignupSuccess(email);
+
+  } catch (error: unknown) {
+    this.handleSignupError(error);
+  } finally {
+    this.submitting.set(false);
+  }
+
+  this.router.navigate(['/login']);
+}
+
+
+  onSignupSuccess(email: string) {
+
+  }
+
+  handleSignupError(error: any) {
+
   }
 }
