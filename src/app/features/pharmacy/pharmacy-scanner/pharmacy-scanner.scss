@@ -1,1 +1,8 @@
+.hhi-inline {
+  flex-wrap: nowrap;
+}
 
+.hhi-inline .hhi-input {
+  flex: 1;
+  min-width: 0;
+}

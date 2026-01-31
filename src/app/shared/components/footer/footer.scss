@@ -1,0 +1,17 @@
+.hhi-app-footer {
+  width: 100%;
+}
+
+.hhi-app-footer__container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hhi-app-footer__links {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
